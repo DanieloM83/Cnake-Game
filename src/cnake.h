@@ -28,7 +28,7 @@ typedef struct SnakeBody {
 } SnakeBody;
 
 SnakeBody* init_snake(void);
-void eval_pos(void);
+void update_game(void);
 void place_apple(void);
 
 void draw_cell(int x, int y, Color color);

@@ -23,6 +23,19 @@ void castrate(void) {
     free(tmp);
 }
 
+void free_snake(SnakeBody* old_snake) {
+    if (old_snake == NULL) return;
+
+    SnakeCell* cur = old_snake->tail;
+    while (cur) {
+        SnakeCell* next = cur->next;
+        free(cur);
+        cur = next;
+    }
+
+    free(old_snake);
+}
+
 SnakeBody* init_snake(void) {
     SnakeCell *tail = init_cell(0, ROWS / 2), *body = init_cell(1, ROWS / 2),
               *head = init_cell(2, ROWS / 2);
@@ -39,9 +52,10 @@ SnakeBody* init_snake(void) {
     return new_snake;
 }
 
-bool in_snake(int x, int y) {
+bool in_snake(int x, int y, bool exclude_head) {
     SnakeCell* cur = snake->tail;
     while (cur) {
+        if (exclude_head && cur == snake->head) break;
         if (cur->x == x && cur->y == y) return true;
         cur = cur->next;
     }
@@ -49,17 +63,23 @@ bool in_snake(int x, int y) {
 }
 
 void place_apple(void) {
-    while (in_snake(apple.x, apple.y))
+    while (in_snake(apple.x, apple.y, false))
         apple = (Vector2){GetRandomValue(0, COLUMNS - 1), GetRandomValue(0, ROWS - 1)};
 }
 
-void eval_pos(void) {
+void update_game(void) {
     enqueue(in_bounds(snake->head->x + snake->direction.x, COLUMNS),
             in_bounds(snake->head->y + snake->direction.y, ROWS));
+
     if (snake->head->x == apple.x && snake->head->y == apple.y) {
         score++;
         record = ((record > score) ? record : score);
         place_apple();
     } else
         castrate();
+
+    if (in_snake(snake->head->x, snake->head->y, true)) {
+        free_snake(snake);
+        snake = init_snake();
+    }
 }

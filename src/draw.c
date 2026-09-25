@@ -10,9 +10,6 @@ void draw_cell(int x, int y, Color color) {
 void draw_snake(void) {
     SnakeCell* cur = snake->tail;
     while (cur->next) {
-        if (cur->x == snake->head->x && cur->y == snake->head->y) {
-            snake = init_snake();
-        }
         draw_cell(cur->x, cur->y, DARKGREEN);
         cur = cur->next;
     }

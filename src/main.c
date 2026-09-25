@@ -31,7 +31,7 @@ int main() {
 
         if (time_since_last_simulation >= 0.1f && IsWindowFocused()) {
             snake->direction = next_direction;
-            eval_pos();
+            update_game();
             time_since_last_simulation = 0;
         }
 
