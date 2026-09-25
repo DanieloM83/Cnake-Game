@@ -27,18 +27,24 @@ typedef struct SnakeBody {
     Vector2 direction;
 } SnakeBody;
 
+typedef enum { GAME_START, GAME_PLAYING, GAME_DYING, GAME_OVER } GameState;
+
+void free_snake(SnakeBody* old_snake);
 SnakeBody* init_snake(void);
-void update_game(void);
 void place_apple(void);
+bool update_game(void);
 
 void draw_cell(int x, int y, Color color);
-void draw_snake(void);
+void draw_snake(float death_percent);
 void draw_grid(void);
 void draw_apple(void);
 void draw_score(void);
+void draw_welcome_text(void);
+void draw_game_over_text(void);
 
 extern SnakeBody* snake;
 extern Vector2 apple;
 extern int score, record;
+extern GameState game_state;
 
 #endif  // CNAKE_H

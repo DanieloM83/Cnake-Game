@@ -67,7 +67,7 @@ void place_apple(void) {
         apple = (Vector2){GetRandomValue(0, COLUMNS - 1), GetRandomValue(0, ROWS - 1)};
 }
 
-void update_game(void) {
+bool update_game(void) {
     enqueue(in_bounds(snake->head->x + snake->direction.x, COLUMNS),
             in_bounds(snake->head->y + snake->direction.y, ROWS));
 
@@ -78,8 +78,5 @@ void update_game(void) {
     } else
         castrate();
 
-    if (in_snake(snake->head->x, snake->head->y, true)) {
-        free_snake(snake);
-        snake = init_snake();
-    }
+    return in_snake(snake->head->x, snake->head->y, true);
 }
