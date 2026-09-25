@@ -52,3 +52,11 @@ Mkfile.old
 dkms.conf
 
 .vscode/
+
+# Ignore binaries
+cnake
+cnake.exe
+
+# Ignore libraries
+lib/libraylib.a
+lib/raylib.h

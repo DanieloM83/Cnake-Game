@@ -13,7 +13,7 @@ inline static int in_bounds(int x, int bounds) {
 }
 
 typedef struct SnakeCell {
-    struct SnakeCell *next;
+    struct SnakeCell* next;
     int x;
     int y;
 } SnakeCell;
@@ -33,8 +33,8 @@ void draw_grid(void);
 void draw_apple(void);
 void draw_score(void);
 
-extern SnakeBody *snake;
+extern SnakeBody* snake;
 extern Vector2 apple;
 extern int score, record;
 
-#endif // CNAKE_H
+#endif  // CNAKE_H

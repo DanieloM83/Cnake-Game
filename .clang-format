@@ -1,0 +1,9 @@
+BasedOnStyle: Google
+IndentWidth: 4
+BreakBeforeBraces: Attach
+AllowShortIfStatementsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: None
+PointerAlignment: Left
+AlignConsecutiveAssignments: true
+ColumnLimit: 100
+SortIncludes: true
