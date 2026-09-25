@@ -24,16 +24,17 @@ void castrate(void) {
 }
 
 SnakeBody* init_snake(void) {
-    SnakeCell *tail = init_cell(0, 0), *body = init_cell(0, 1), *head = init_cell(0, 2);
+    SnakeCell *tail = init_cell(0, ROWS / 2), *body = init_cell(1, ROWS / 2),
+              *head = init_cell(2, ROWS / 2);
     tail->next = body, body->next = head;
 
     SnakeBody* new_snake = (SnakeBody*)malloc(sizeof(SnakeBody));
     new_snake->head = head, new_snake->tail = tail;
-    new_snake->direction = (Vector2){0, 1};
+    new_snake->direction = (Vector2){1, 0};
 
     score = 0;
 
-    apple = (Vector2){GetRandomValue(1, N - 1), GetRandomValue(0, M - 1)};
+    apple = (Vector2){GetRandomValue(1, COLUMNS - 1), GetRandomValue(0, ROWS - 1)};
 
     return new_snake;
 }
@@ -49,12 +50,12 @@ bool in_snake(int x, int y) {
 
 void place_apple(void) {
     while (in_snake(apple.x, apple.y))
-        apple = (Vector2){GetRandomValue(0, N - 1), GetRandomValue(0, M - 1)};
+        apple = (Vector2){GetRandomValue(0, COLUMNS - 1), GetRandomValue(0, ROWS - 1)};
 }
 
 void eval_pos(void) {
-    enqueue(in_bounds(snake->head->x + snake->direction.x, N),
-            in_bounds(snake->head->y + snake->direction.y, M));
+    enqueue(in_bounds(snake->head->x + snake->direction.x, COLUMNS),
+            in_bounds(snake->head->y + snake->direction.y, ROWS));
     if (snake->head->x == apple.x && snake->head->y == apple.y) {
         score++;
         record = ((record > score) ? record : score);

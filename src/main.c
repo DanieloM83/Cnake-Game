@@ -8,37 +8,36 @@ int score = 0, record = 0;
 
 int main() {
     SetConfigFlags(FLAG_VSYNC_HINT);
-    SetTargetFPS(60);
-    InitWindow(S_WIDTH, S_HEIGHT, "Cnake!");
+    SetTargetFPS(1000);
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Cnake!");
 
     snake = init_snake();
 
-    bool direction_setted            = true;
     float time_since_last_simulation = 0.0f;
+    Vector2 next_direction           = snake->direction;
 
     while (!WindowShouldClose()) {
         time_since_last_simulation += GetFrameTime();
 
-        if (!direction_setted) {
-            if ((IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) && snake->direction.y != 1)
-                snake->direction = (Vector2){0, -1}, direction_setted = true;
-            else if ((IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) && snake->direction.x != 1)
-                snake->direction = (Vector2){-1, 0}, direction_setted = true;
-            else if ((IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) && snake->direction.y != -1)
-                snake->direction = (Vector2){0, 1}, direction_setted = true;
-            else if ((IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) && snake->direction.x != -1)
-                snake->direction = (Vector2){1, 0}, direction_setted = true;
+        if ((IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) && snake->direction.y != 1) {
+            next_direction = (Vector2){0, -1};
+        } else if ((IsKeyPressed(KEY_A) || IsKeyPressed(KEY_LEFT)) && snake->direction.x != 1) {
+            next_direction = (Vector2){-1, 0};
+        } else if ((IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) && snake->direction.y != -1) {
+            next_direction = (Vector2){0, 1};
+        } else if ((IsKeyPressed(KEY_D) || IsKeyPressed(KEY_RIGHT)) && snake->direction.x != -1) {
+            next_direction = (Vector2){1, 0};
         }
 
         if (time_since_last_simulation >= 0.1f && IsWindowFocused()) {
+            snake->direction = next_direction;
             eval_pos();
             time_since_last_simulation = 0;
-            direction_setted           = false;
         }
 
         BeginDrawing();
 
-        ClearBackground(GetColor(0x181818FF));
+        ClearBackground(BACKGROUND_COLOR);
         draw_snake();
         draw_apple();
         draw_grid();
