@@ -63,3 +63,28 @@ void draw_game_over_text(void) {
     DrawText(main_msg, (SCREEN_WIDTH - main_width) / 2, SCREEN_HEIGHT / 2 - 36, 72, WHITE);
     DrawText(sub_msg, (SCREEN_WIDTH - sub_width) / 2, SCREEN_HEIGHT / 2 + 36, 36, TEXT_COLOR);
 }
+
+void draw_win_text(void) {
+    const char* main_msg = "YOU WON!";
+    const char* sub_msg1 = "Congratilations, you beat the game! :o";
+    const char* sub_msg2 = "Press any key to continue...";
+    int main_width       = MeasureText(main_msg, 72);
+    int sub_width1       = MeasureText(sub_msg1, 36);
+    int sub_width2       = MeasureText(sub_msg2, 36);
+    DrawText(main_msg, (SCREEN_WIDTH - main_width) / 2, SCREEN_HEIGHT / 2 - 36, 72, WHITE);
+    DrawText(sub_msg1, (SCREEN_WIDTH - sub_width1) / 2, SCREEN_HEIGHT / 2 + 36, 36, TEXT_COLOR);
+    DrawText(sub_msg2, (SCREEN_WIDTH - sub_width2) / 2, SCREEN_HEIGHT / 2 + 80, 36, TEXT_COLOR);
+}
+
+void draw_pause(float alpha) {
+    Color color  = ColorAlpha(WHITE, alpha);
+    int size     = 150;
+    int wsmall   = 20;
+    int hsmall   = size / 2;
+    Rectangle r1 = {(SCREEN_WIDTH - size) / 2, (SCREEN_HEIGHT - size) / 2, size, size};
+    Rectangle r2 = {SCREEN_WIDTH / 2 - wsmall - 10, (SCREEN_HEIGHT - hsmall) / 2, wsmall, hsmall};
+    Rectangle r3 = {SCREEN_WIDTH / 2 + 10, (SCREEN_HEIGHT - hsmall) / 2, wsmall, hsmall};
+    DrawRectangleRoundedLines(r1, 0.25, 0, 20, color);
+    DrawRectangleRounded(r2, 1, 0, color);
+    DrawRectangleRounded(r3, 1, 0, color);
+}

@@ -5,8 +5,8 @@
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
-#define COLUMNS 20
-#define ROWS 15
+#define COLUMNS 20  // 20
+#define ROWS 1      // 15
 
 #define BACKGROUND_COLOR GetColor(0x181818FF)
 #define GRID_COLOR GetColor(0x7e7e7eff)
@@ -27,7 +27,7 @@ typedef struct SnakeBody {
     Vector2 direction;
 } SnakeBody;
 
-typedef enum { GAME_START, GAME_PLAYING, GAME_DYING, GAME_OVER } GameState;
+typedef enum { GAME_START, GAME_PLAYING, GAME_DYING, GAME_OVER, GAME_PAUSE, GAME_WIN } GameState;
 
 void free_snake(SnakeBody* old_snake);
 SnakeBody* init_snake(void);
@@ -41,6 +41,8 @@ void draw_apple(void);
 void draw_score(void);
 void draw_welcome_text(void);
 void draw_game_over_text(void);
+void draw_win_text(void);
+void draw_pause(float alpha);
 
 extern SnakeBody* snake;
 extern Vector2 apple;

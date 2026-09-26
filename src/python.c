@@ -74,7 +74,10 @@ bool update_game(void) {
     if (snake->head->x == apple.x && snake->head->y == apple.y) {
         score++;
         record = ((record > score) ? record : score);
-        place_apple();
+        if (score + 3 == ROWS * COLUMNS)
+            game_state = GAME_WIN;
+        else
+            place_apple();
     } else
         castrate();
 

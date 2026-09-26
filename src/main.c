@@ -20,6 +20,8 @@ int main() {
 
     snake = init_snake();
 
+    float alpha                      = 0.0f;
+    bool fadingIn                    = true;
     float time_since_last_simulation = 0.0f;
     float death_timer                = 0.0f;
     Vector2 next_direction           = snake->direction;
@@ -54,6 +56,8 @@ int main() {
                 } else if ((IsKeyPressed(KEY_D) || IsKeyPressed(KEY_RIGHT)) &&
                            snake->direction.x != -1) {
                     next_direction = (Vector2){1, 0};
+                } else if ((IsKeyPressed(KEY_P))) {
+                    game_state = GAME_PAUSE;
                 }
 
                 if (time_since_last_simulation >= 0.1f && IsWindowFocused()) {
@@ -69,6 +73,33 @@ int main() {
                 draw_apple();
                 draw_grid();
                 draw_score();
+                break;
+
+            case GAME_PAUSE:
+                if ((IsKeyPressed(KEY_P))) {
+                    alpha                      = 0.0f;
+                    time_since_last_simulation = 0;
+                    game_state                 = GAME_PLAYING;
+                }
+
+                if (fadingIn)
+                    alpha += GetFrameTime();
+                else
+                    alpha -= GetFrameTime();
+
+                if (alpha >= 1.0f) {
+                    alpha    = 1.0f;
+                    fadingIn = false;
+                } else if (alpha <= 0.0f) {
+                    alpha    = 0.0f;
+                    fadingIn = true;
+                }
+
+                draw_snake(0.0f);
+                draw_apple();
+                draw_grid();
+                draw_score();
+                draw_pause(alpha);
                 break;
 
             case GAME_DYING:
@@ -95,6 +126,17 @@ int main() {
                 draw_grid();
                 draw_score();
                 draw_game_over_text();
+                break;
+
+            case GAME_WIN:
+                if (GetKeyPressed() != 0) {
+                    game_state = GAME_START;
+                }
+
+                draw_snake(0.0f);
+                draw_grid();
+                draw_score();
+                draw_win_text();
                 break;
         }
 
