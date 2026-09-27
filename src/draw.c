@@ -49,6 +49,19 @@ void draw_score(const Game* game) {
     DrawText(record_text, record_x, record_y, SUBTEXT_FS, SUBTEXT_COLOR);
 }
 
+void draw_controls(void) {
+    const char* movement_text = "WASD or arrows to move";
+    const char* pause_text    = "P to pause or unpause";
+    const char* exit_text     = "ESC to exit";
+    const int x               = 10;
+    const int movement_y      = SCREEN_HEIGHT - 3 * (SUBTEXT_FS + 5);
+    const int pause_y         = SCREEN_HEIGHT - 2 * (SUBTEXT_FS + 5);
+    const int exit_y          = SCREEN_HEIGHT - SUBTEXT_FS - 5;
+    DrawText(movement_text, x, movement_y, SUBTEXT_FS, SUBTEXT_COLOR);
+    DrawText(pause_text, x, pause_y, SUBTEXT_FS, SUBTEXT_COLOR);
+    DrawText(exit_text, x, exit_y, SUBTEXT_FS, SUBTEXT_COLOR);
+}
+
 void draw_welcome_text(void) {
     const char* heading = "CNAKE!";
     const char* text    = "Press any key to start...";
@@ -124,6 +137,7 @@ void game_render(const Game* game) {
             draw_grid();
             draw_score(game);
             draw_welcome_text();
+            draw_controls();
             break;
 
         case GAME_PLAYING:
@@ -139,6 +153,7 @@ void game_render(const Game* game) {
             draw_grid();
             draw_score(game);
             draw_pause(fabsf(game->pause_alpha_phase));
+            draw_controls();
             break;
 
         case GAME_DYING:
@@ -152,6 +167,7 @@ void game_render(const Game* game) {
             draw_grid();
             draw_score(game);
             draw_game_over_text();
+            draw_controls();
             break;
 
         case GAME_WIN:
