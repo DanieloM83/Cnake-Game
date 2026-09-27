@@ -6,7 +6,12 @@ int main(void) {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Cnake!");
 
     Game game = {0};
-    game_init(&game);
+
+    if (!game_init(&game)) {
+        TraceLog(LOG_ERROR, "Failed to initialize game");
+        CloseWindow();
+        return 1;
+    }
 
     while (!WindowShouldClose()) {
         const float delta_time = GetFrameTime();

@@ -1,6 +1,9 @@
+#include <math.h>
+#include <stddef.h>
+
 #include "cnake.h"
 
-void draw_cell(int x, int y, Color color) {
+static void draw_cell(int x, int y, Color color) {
     const int pos_x  = (x * SCREEN_WIDTH / COLUMNS) + 1;
     const int pos_y  = (y * SCREEN_HEIGHT / ROWS) + 1;
     const int width  = SCREEN_WIDTH / COLUMNS;
@@ -8,7 +11,7 @@ void draw_cell(int x, int y, Color color) {
     DrawRectangle(pos_x, pos_y, width, height, color);
 }
 
-void draw_snake(const Game* game, float death_percent) {
+static void draw_snake(const Game* game, float death_percent) {
     const float offset = game->snake->length * death_percent;
     int index          = game->snake->length;
     for (const SnakeCell* cell = game->snake->tail; cell != NULL; cell = cell->next, index--) {
@@ -24,7 +27,7 @@ void draw_snake(const Game* game, float death_percent) {
     }
 }
 
-void draw_grid(void) {
+static void draw_grid(void) {
     const int cell_width  = SCREEN_WIDTH / COLUMNS;
     const int cell_height = SCREEN_HEIGHT / ROWS;
 
@@ -34,11 +37,11 @@ void draw_grid(void) {
         DrawRectangle(x * cell_width, 0, 1, SCREEN_HEIGHT, GRID_COLOR);
 }
 
-void draw_apple(const Game* game) {
+static void draw_apple(const Game* game) {
     draw_cell(game->apple.x, game->apple.y, APPLE_COLOR);
 }
 
-void draw_score(const Game* game) {
+static void draw_score(const Game* game) {
     const char* score_text  = TextFormat("Score: %d", game->score);
     const char* record_text = TextFormat("Record: %d", game->record);
     const int score_x       = (SCREEN_WIDTH - MeasureText(score_text, SUBTEXT_FS)) - 10;
@@ -49,7 +52,7 @@ void draw_score(const Game* game) {
     DrawText(record_text, record_x, record_y, SUBTEXT_FS, SUBTEXT_COLOR);
 }
 
-void draw_controls(void) {
+static void draw_controls(void) {
     const char* movement_text = "WASD or arrows to move";
     const char* pause_text    = "P to pause or unpause";
     const char* exit_text     = "ESC to exit";
@@ -62,7 +65,7 @@ void draw_controls(void) {
     DrawText(exit_text, x, exit_y, SUBTEXT_FS, SUBTEXT_COLOR);
 }
 
-void draw_welcome_text(void) {
+static void draw_welcome_text(void) {
     const char* heading = "CNAKE!";
     const char* text    = "Press any key to start...";
     const int heading_x = (SCREEN_WIDTH - MeasureText(heading, HEADING_FS)) / 2;
@@ -73,7 +76,7 @@ void draw_welcome_text(void) {
     DrawText(text, text_x, text_y, TEXT_FS, TEXT_COLOR);
 }
 
-void draw_game_over_text(void) {
+static void draw_game_over_text(void) {
     const char* heading = "GAME OVER!";
     const char* text    = "Press any key to restart...";
     const int heading_x = (SCREEN_WIDTH - MeasureText(heading, HEADING_FS)) / 2;
@@ -84,7 +87,7 @@ void draw_game_over_text(void) {
     DrawText(text, text_x, text_y, TEXT_FS, TEXT_COLOR);
 }
 
-void draw_win_text(void) {
+static void draw_win_text(void) {
     const char* heading = "YOU WON!";
     const char* text1   = "Congratulations, you beat the game! :o";
     const char* text2   = "Press any key to continue...";
@@ -99,7 +102,7 @@ void draw_win_text(void) {
     DrawText(text2, text2_x, text2_y, TEXT_FS, TEXT_COLOR);
 }
 
-void draw_pause(float alpha) {
+static void draw_pause(float alpha) {
     const Color color          = ColorAlpha(RAYWHITE, alpha);
     const int center_x         = SCREEN_WIDTH / 2;
     const int center_y         = SCREEN_HEIGHT / 2;
@@ -126,6 +129,17 @@ void draw_pause(float alpha) {
     DrawRectangleRoundedLines(frame, roundness, round_segments, border_thickness, color);
     DrawRectangleRounded(left_bar, roundness, round_segments, color);
     DrawRectangleRounded(right_bar, roundness, round_segments, color);
+}
+
+static void draw_error_text(void) {
+    const char* heading = "FATAL ERROR";
+    const char* text    = "Press ESC to exit";
+    const int heading_x = (SCREEN_WIDTH - MeasureText(heading, HEADING_FS)) / 2;
+    const int text_x    = (SCREEN_WIDTH - MeasureText(text, TEXT_FS)) / 2;
+    const int heading_y = (SCREEN_HEIGHT - HEADING_FS) / 2;
+    const int text_y    = (SCREEN_HEIGHT + HEADING_FS) / 2;
+    DrawText(heading, heading_x, heading_y, HEADING_FS, SNAKE_DEAD_COLOR);
+    DrawText(text, text_x, text_y, TEXT_FS, TEXT_COLOR);
 }
 
 void game_render(const Game* game) {
@@ -156,12 +170,14 @@ void game_render(const Game* game) {
             draw_controls();
             break;
 
-        case GAME_DYING:
-            draw_snake(game, game->death_timer);
+        case GAME_DYING: {
+            const float death_progress = fminf(game->death_timer / DEATH_ANIMATION_DURATION, 1.0f);
+            draw_snake(game, death_progress);
             draw_apple(game);
             draw_grid();
             draw_score(game);
             break;
+        }
 
         case GAME_OVER:
             draw_grid();
@@ -175,6 +191,10 @@ void game_render(const Game* game) {
             draw_grid();
             draw_score(game);
             draw_win_text();
+            break;
+
+        case GAME_ERROR:
+            draw_error_text();
             break;
     }
 

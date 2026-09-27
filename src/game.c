@@ -1,7 +1,16 @@
+#include <stddef.h>
+
 #include "cnake.h"
 
-void game_setup_round(Game* game) {
-    game->snake             = snake_create();
+static bool game_setup_round(Game* game) {
+    if (game == NULL) return false;
+
+    game->snake = snake_create();
+    if (game->snake == NULL) {
+        game->state = GAME_ERROR;
+        return false;
+    }
+
     game->score             = 0;
     game->state             = GAME_START;
     game->next_direction    = game->snake->direction;
@@ -9,36 +18,56 @@ void game_setup_round(Game* game) {
     game->death_timer       = 0.0f;
     game->pause_alpha_phase = 0.0f;
 
-    place_apple(game);
+    if (!place_apple(game)) {
+        snake_destroy(game->snake);
+        game->snake = NULL;
+        game->state = GAME_ERROR;
+        return false;
+    }
+
+    return true;
 }
 
-void game_init(Game* game) {
+bool game_init(Game* game) {
+    if (game == NULL) return false;
+
     *game = (Game){0};
-    game_setup_round(game);
+
+    return game_setup_round(game);
 }
 
-void game_reset(Game* game) {
+static bool game_reset(Game* game) {
+    if (game == NULL) {
+        return false;
+    }
+
     const int record = game->record;
 
     snake_destroy(game->snake);
 
     *game        = (Game){0};
     game->record = record;
+    game->state  = GAME_ERROR;
 
-    game_setup_round(game);
+    return game_setup_round(game);
 }
 
 void game_update(Game* game, float delta_time) {
+    if (game == NULL) return;
+
     switch (game->state) {
         case GAME_START:
         case GAME_OVER:
             if (GetKeyPressed() != 0) {
-                game_reset(game);
-                game->state = GAME_PLAYING;
+                if (game_reset(game)) game->state = GAME_PLAYING;
             }
             break;
 
         case GAME_PLAYING:
+            if (game->snake == NULL) {
+                game->state = GAME_ERROR;
+                return;
+            }
             game->simulation_timer += delta_time;
 
             if ((IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) && game->snake->direction.y != 1) {
@@ -70,12 +99,16 @@ void game_update(Game* game, float delta_time) {
                         if (game->snake->length == ROWS * COLUMNS) {
                             game->state = GAME_WIN;
                             return;
-                        } else {
-                            place_apple(game);
+                        } else if (!place_apple(game)) {
+                            game->state = GAME_ERROR;
+                            return;
                         }
                         break;
                     case SNAKE_COLLIDED:
                         game->state = GAME_DYING;
+                        return;
+                    case SNAKE_ALLOCATION_FAILED:
+                        game->state = GAME_ERROR;
                         return;
                     case SNAKE_MOVED:
                         break;
@@ -97,19 +130,22 @@ void game_update(Game* game, float delta_time) {
 
         case GAME_DYING:
             game->death_timer += delta_time;
-            if (game->death_timer >= DEATH_ANIMATION_DURATION) {
+            if (game->death_timer >= DEATH_TOTAL_DURATION) {
                 game->death_timer = 0;
                 game->state       = GAME_OVER;
             }
             break;
 
         case GAME_WIN:
-            if (GetKeyPressed() != 0) game_reset(game);
+            if (GetKeyPressed() != 0)
+                if (game_reset(game)) game->state = GAME_PLAYING;
             break;
     }
 }
 
 void game_destroy(Game* game) {
+    if (game == NULL) return;
+
     snake_destroy(game->snake);
     game->snake = NULL;
 }

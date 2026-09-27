@@ -1,9 +1,8 @@
 #if !defined(CNAKE_H)
 #define CNAKE_H
 
-#include <math.h>
 #include <raylib.h>
-#include <stdlib.h>
+#include <stdbool.h>
 
 // Size consants
 #define SCREEN_WIDTH 800
@@ -30,7 +29,9 @@
 
 // Timers and intervals constants
 #define GAME_TICK_INTERVAL 0.1f
-#define DEATH_ANIMATION_DURATION 1.75f
+#define DEATH_ANIMATION_DURATION 1.0f
+#define DEATH_POST_ANIMATION_DELAY 0.75f
+#define DEATH_TOTAL_DURATION (DEATH_ANIMATION_DURATION + DEATH_POST_ANIMATION_DELAY)
 
 // Math functions
 inline static int wrap_coordinate(int value, int size) {
@@ -54,9 +55,17 @@ typedef struct SnakeBody {
     int length;
 } SnakeBody;
 
-typedef enum { SNAKE_MOVED, SNAKE_ATE_APPLE, SNAKE_COLLIDED } SnakeResult;
+typedef enum { SNAKE_MOVED, SNAKE_ATE_APPLE, SNAKE_COLLIDED, SNAKE_ALLOCATION_FAILED } SnakeResult;
 
-typedef enum { GAME_START, GAME_PLAYING, GAME_DYING, GAME_OVER, GAME_PAUSE, GAME_WIN } GameState;
+typedef enum {
+    GAME_START,
+    GAME_PLAYING,
+    GAME_DYING,
+    GAME_OVER,
+    GAME_PAUSE,
+    GAME_WIN,
+    GAME_ERROR
+} GameState;
 
 typedef struct Game {
     SnakeBody* snake;
@@ -76,14 +85,14 @@ typedef struct Game {
 void game_render(const Game* game);
 
 // game.c
-void game_init(Game* game);
+bool game_init(Game* game);
 void game_update(Game* game, float delta_time);
 void game_destroy(Game* game);
 
-// python.c
+// snake.c
 SnakeBody* snake_create(void);
 void snake_destroy(SnakeBody* old_snake);
-void place_apple(Game* game);
+bool place_apple(Game* game);
 SnakeResult snake_step(SnakeBody* snake, Vector2 apple);
 
 #endif  // CNAKE_H
