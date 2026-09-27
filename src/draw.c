@@ -1,90 +1,166 @@
-#include <raylib.h>
-
 #include "cnake.h"
 
 void draw_cell(int x, int y, Color color) {
-    DrawRectangle((x * SCREEN_WIDTH / COLUMNS) + 1, (y * SCREEN_HEIGHT / ROWS) + 1,
-                  SCREEN_WIDTH / COLUMNS, SCREEN_HEIGHT / ROWS, color);
+    const int pos_x  = (x * SCREEN_WIDTH / COLUMNS) + 1;
+    const int pos_y  = (y * SCREEN_HEIGHT / ROWS) + 1;
+    const int width  = SCREEN_WIDTH / COLUMNS;
+    const int height = SCREEN_HEIGHT / ROWS;
+    DrawRectangle(pos_x, pos_y, width, height, color);
 }
 
-void draw_snake(float death_percent) {
-    int n          = 0;
-    SnakeCell* cur = snake->tail;
-    while (cur) {
-        cur = cur->next;
-        n += 1;
-    }
+void draw_snake(const Game* game, float death_percent) {
+    const float offset = game->snake->length * death_percent;
+    int index          = game->snake->length;
+    for (const SnakeCell* cell = game->snake->tail; cell != NULL; cell = cell->next, index--) {
+        Color color;
+        if (index <= offset)
+            color = SNAKE_DEAD_COLOR;
+        else if (cell == game->snake->head)
+            color = SNAKE_HEAD_COLOR;
+        else
+            color = SNAKE_BODY_COLOR;
 
-    int i = n;
-    cur   = snake->tail;
-    while (cur->next) {
-        draw_cell(cur->x, cur->y, (n * death_percent >= i) ? PINK : DARKGREEN);
-        cur = cur->next;
-        i -= 1;
+        draw_cell(cell->x, cell->y, color);
     }
-
-    draw_cell(cur->x, cur->y, (n * death_percent >= i) ? PINK : GREEN);
 }
 
 void draw_grid(void) {
-    for (int i = 1; i < ROWS; i++)
-        DrawRectangle(0, i * SCREEN_HEIGHT / ROWS, SCREEN_WIDTH, 1, GRID_COLOR);
-    for (int i = 1; i < COLUMNS; i++)
-        DrawRectangle(i * SCREEN_WIDTH / COLUMNS, 0, 1, SCREEN_HEIGHT, GRID_COLOR);
+    const int cell_width  = SCREEN_WIDTH / COLUMNS;
+    const int cell_height = SCREEN_HEIGHT / ROWS;
+
+    for (int y = 1; y < ROWS; y++) DrawRectangle(0, y * cell_height, SCREEN_WIDTH, 1, GRID_COLOR);
+
+    for (int x = 1; x < COLUMNS; x++)
+        DrawRectangle(x * cell_width, 0, 1, SCREEN_HEIGHT, GRID_COLOR);
 }
 
-void draw_apple(void) {
-    draw_cell(apple.x, apple.y, RED);
+void draw_apple(const Game* game) {
+    draw_cell(game->apple.x, game->apple.y, APPLE_COLOR);
 }
 
-void draw_score(void) {
-    const char* score_msg  = TextFormat("Score: %d", score);
-    const char* record_msg = TextFormat("Record: %d", record);
-    int score_width        = MeasureText(score_msg, 20);
-    int record_width       = MeasureText(record_msg, 20);
-    DrawText(score_msg, SCREEN_WIDTH - score_width - 10, 10, 20, TEXT_COLOR);
-    DrawText(record_msg, SCREEN_WIDTH - record_width - 10, 40, 20, TEXT_COLOR);
+void draw_score(const Game* game) {
+    const char* score_text  = TextFormat("Score: %d", game->score);
+    const char* record_text = TextFormat("Record: %d", game->record);
+    const int score_x       = (SCREEN_WIDTH - MeasureText(score_text, SUBTEXT_FS)) - 10;
+    const int record_x      = (SCREEN_WIDTH - MeasureText(record_text, SUBTEXT_FS)) - 10;
+    const int score_y       = 10;
+    const int record_y      = score_y + SUBTEXT_FS + 10;
+    DrawText(score_text, score_x, score_y, SUBTEXT_FS, SUBTEXT_COLOR);
+    DrawText(record_text, record_x, record_y, SUBTEXT_FS, SUBTEXT_COLOR);
 }
 
 void draw_welcome_text(void) {
-    const char* main_msg = "CNAKE!";
-    const char* sub_msg  = "Press any key to start...";
-    int main_width       = MeasureText(main_msg, 72);
-    int sub_width        = MeasureText(sub_msg, 36);
-    DrawText(main_msg, (SCREEN_WIDTH - main_width) / 2, SCREEN_HEIGHT / 2 - 36, 72, WHITE);
-    DrawText(sub_msg, (SCREEN_WIDTH - sub_width) / 2, SCREEN_HEIGHT / 2 + 36, 36, TEXT_COLOR);
+    const char* heading = "CNAKE!";
+    const char* text    = "Press any key to start...";
+    const int heading_x = (SCREEN_WIDTH - MeasureText(heading, HEADING_FS)) / 2;
+    const int text_x    = (SCREEN_WIDTH - MeasureText(text, TEXT_FS)) / 2;
+    const int heading_y = (SCREEN_HEIGHT - HEADING_FS) / 2;
+    const int text_y    = (SCREEN_HEIGHT + HEADING_FS) / 2;
+    DrawText(heading, heading_x, heading_y, HEADING_FS, HEADING_COLOR);
+    DrawText(text, text_x, text_y, TEXT_FS, TEXT_COLOR);
 }
 
 void draw_game_over_text(void) {
-    const char* main_msg = "GAME OVER!";
-    const char* sub_msg  = "Press any key to restart...";
-    int main_width       = MeasureText(main_msg, 72);
-    int sub_width        = MeasureText(sub_msg, 36);
-    DrawText(main_msg, (SCREEN_WIDTH - main_width) / 2, SCREEN_HEIGHT / 2 - 36, 72, WHITE);
-    DrawText(sub_msg, (SCREEN_WIDTH - sub_width) / 2, SCREEN_HEIGHT / 2 + 36, 36, TEXT_COLOR);
+    const char* heading = "GAME OVER!";
+    const char* text    = "Press any key to restart...";
+    const int heading_x = (SCREEN_WIDTH - MeasureText(heading, HEADING_FS)) / 2;
+    const int text_x    = (SCREEN_WIDTH - MeasureText(text, TEXT_FS)) / 2;
+    const int heading_y = (SCREEN_HEIGHT - HEADING_FS) / 2;
+    const int text_y    = (SCREEN_HEIGHT + HEADING_FS) / 2;
+    DrawText(heading, heading_x, heading_y, HEADING_FS, HEADING_COLOR);
+    DrawText(text, text_x, text_y, TEXT_FS, TEXT_COLOR);
 }
 
 void draw_win_text(void) {
-    const char* main_msg = "YOU WON!";
-    const char* sub_msg1 = "Congratilations, you beat the game! :o";
-    const char* sub_msg2 = "Press any key to continue...";
-    int main_width       = MeasureText(main_msg, 72);
-    int sub_width1       = MeasureText(sub_msg1, 36);
-    int sub_width2       = MeasureText(sub_msg2, 36);
-    DrawText(main_msg, (SCREEN_WIDTH - main_width) / 2, SCREEN_HEIGHT / 2 - 36, 72, WHITE);
-    DrawText(sub_msg1, (SCREEN_WIDTH - sub_width1) / 2, SCREEN_HEIGHT / 2 + 36, 36, TEXT_COLOR);
-    DrawText(sub_msg2, (SCREEN_WIDTH - sub_width2) / 2, SCREEN_HEIGHT / 2 + 80, 36, TEXT_COLOR);
+    const char* heading = "YOU WON!";
+    const char* text1   = "Congratulations, you beat the game! :o";
+    const char* text2   = "Press any key to continue...";
+    const int heading_x = (SCREEN_WIDTH - MeasureText(heading, HEADING_FS)) / 2;
+    const int text1_x   = (SCREEN_WIDTH - MeasureText(text1, TEXT_FS)) / 2;
+    const int text2_x   = (SCREEN_WIDTH - MeasureText(text2, TEXT_FS)) / 2;
+    const int heading_y = (SCREEN_HEIGHT - HEADING_FS) / 2;
+    const int text1_y   = (SCREEN_HEIGHT + HEADING_FS) / 2;
+    const int text2_y   = (SCREEN_HEIGHT + HEADING_FS) / 2 + TEXT_FS;
+    DrawText(heading, heading_x, heading_y, HEADING_FS, HEADING_COLOR);
+    DrawText(text1, text1_x, text1_y, TEXT_FS, TEXT_COLOR);
+    DrawText(text2, text2_x, text2_y, TEXT_FS, TEXT_COLOR);
 }
 
 void draw_pause(float alpha) {
-    Color color  = ColorAlpha(WHITE, alpha);
-    int size     = 150;
-    int wsmall   = 20;
-    int hsmall   = size / 2;
-    Rectangle r1 = {(SCREEN_WIDTH - size) / 2, (SCREEN_HEIGHT - size) / 2, size, size};
-    Rectangle r2 = {SCREEN_WIDTH / 2 - wsmall - 10, (SCREEN_HEIGHT - hsmall) / 2, wsmall, hsmall};
-    Rectangle r3 = {SCREEN_WIDTH / 2 + 10, (SCREEN_HEIGHT - hsmall) / 2, wsmall, hsmall};
-    DrawRectangleRoundedLines(r1, 0.25, 0, 20, color);
-    DrawRectangleRounded(r2, 1, 0, color);
-    DrawRectangleRounded(r3, 1, 0, color);
+    const Color color          = ColorAlpha(RAYWHITE, alpha);
+    const int center_x         = SCREEN_WIDTH / 2;
+    const int center_y         = SCREEN_HEIGHT / 2;
+    const int frame_size       = 150;
+    const int bar_width        = 20;
+    const int bar_height       = frame_size / 2;
+    const int bar_gap          = 20;
+    const float roundness      = 0.25f;
+    const int round_segments   = 20;
+    const int border_thickness = 20;
+
+    const Rectangle frame = {
+        center_x - frame_size / 2, center_y - frame_size / 2, frame_size, frame_size
+    };
+
+    const Rectangle left_bar = {
+        center_x - bar_gap / 2 - bar_width, center_y - bar_height / 2, bar_width, bar_height
+    };
+
+    const Rectangle right_bar = {
+        center_x + bar_gap / 2, center_y - bar_height / 2, bar_width, bar_height
+    };
+
+    DrawRectangleRoundedLines(frame, roundness, round_segments, border_thickness, color);
+    DrawRectangleRounded(left_bar, roundness, round_segments, color);
+    DrawRectangleRounded(right_bar, roundness, round_segments, color);
+}
+
+void game_render(const Game* game) {
+    BeginDrawing();
+    ClearBackground(BACKGROUND_COLOR);
+
+    switch (game->state) {
+        case GAME_START:
+            draw_grid();
+            draw_score(game);
+            draw_welcome_text();
+            break;
+
+        case GAME_PLAYING:
+            draw_snake(game, 0.0f);
+            draw_apple(game);
+            draw_grid();
+            draw_score(game);
+            break;
+
+        case GAME_PAUSE:
+            draw_snake(game, 0.0f);
+            draw_apple(game);
+            draw_grid();
+            draw_score(game);
+            draw_pause(fabsf(game->pause_alpha_phase));
+            break;
+
+        case GAME_DYING:
+            draw_snake(game, game->death_timer);
+            draw_apple(game);
+            draw_grid();
+            draw_score(game);
+            break;
+
+        case GAME_OVER:
+            draw_grid();
+            draw_score(game);
+            draw_game_over_text();
+            break;
+
+        case GAME_WIN:
+            draw_snake(game, 0.0f);
+            draw_grid();
+            draw_score(game);
+            draw_win_text();
+            break;
+    }
+
+    EndDrawing();
 }
