@@ -1,7 +1,21 @@
+/**
+ * @file game.c
+ * @brief Game lifecycle, input handling, and simulation updates.
+ *
+ * This module owns the high-level game state machine. It processes input,
+ * advances the simulation, handles scoring, and transitions between
+ * start, playing, pause, death, win, and error states.
+ */
+
 #include <stddef.h>
 
 #include "cnake.h"
 
+/**
+ * @brief Creates the snake and resets per-round state.
+ *
+ * The current record is intentionally not modified here.
+ */
 static bool game_setup_round(Game* game) {
     if (game == NULL) return false;
 
@@ -36,6 +50,9 @@ bool game_init(Game* game) {
     return game_setup_round(game);
 }
 
+/**
+ * @brief Restarts the current round while preserving the record.
+ */
 static bool game_reset(Game* game) {
     if (game == NULL) {
         return false;
@@ -91,7 +108,7 @@ void game_update(Game* game, float delta_time) {
 
             if (game->simulation_timer >= GAME_TICK_INTERVAL && IsWindowFocused()) {
                 game->snake->direction = game->next_direction;
-                game->simulation_timer = 0;
+                game->simulation_timer -= GAME_TICK_INTERVAL;
                 switch (snake_step(game->snake, game->apple)) {
                     case SNAKE_ATE_APPLE:
                         game->score++;
@@ -107,6 +124,7 @@ void game_update(Game* game, float delta_time) {
                     case SNAKE_COLLIDED:
                         game->state = GAME_DYING;
                         return;
+                    case SNAKE_INVALID_ARGUMENT:
                     case SNAKE_ALLOCATION_FAILED:
                         game->state = GAME_ERROR;
                         return;

@@ -1,3 +1,13 @@
+/**
+ * @file snake.c
+ * @brief Snake data structure, movement, collision, and apple placement.
+ *
+ * The snake is represented as a singly linked list. The tail points to the
+ * oldest cell and the head points to the newest cell.
+ *
+ * Memory allocated by this module is released by snake_destroy().
+ */
+
 #include <stdlib.h>
 
 #include "cnake.h"
@@ -61,30 +71,32 @@ static void snake_pop_tail(SnakeBody* snake) {
     free(tmp);
 }
 
-void snake_destroy(SnakeBody* old_snake) {
-    if (old_snake == NULL) return;
+void snake_destroy(SnakeBody* snake) {
+    if (snake == NULL) return;
 
-    SnakeCell* cur = old_snake->tail;
+    SnakeCell* cur = snake->tail;
     while (cur) {
         SnakeCell* next = cur->next;
         free(cur);
         cur = next;
     }
 
-    free(old_snake);
+    free(snake);
 }
 
-static bool snake_collided(SnakeBody* snake) {
-    if (snake == NULL || snake->head == NULL) return false;
+static bool snake_collided(const SnakeBody* snake) {
+    if (snake == NULL || snake->head == NULL || snake->tail == NULL) return false;
 
-    for (const SnakeCell* cell = snake->tail; cell != snake->head; cell = cell->next)
+    for (const SnakeCell* cell = snake->tail; cell != snake->head; cell = cell->next) {
+        if (cell == NULL) break;
         if (cell->x == snake->head->x && cell->y == snake->head->y) return true;
+    }
 
     return false;
 }
 
-static bool snake_contains(SnakeBody* snake, int x, int y) {
-    if (snake == NULL) return false;
+static bool snake_contains(const SnakeBody* snake, int x, int y) {
+    if (snake == NULL || snake->tail == NULL) return false;
 
     for (const SnakeCell* cell = snake->tail; cell != NULL; cell = cell->next)
         if (cell->x == x && cell->y == y) return true;
@@ -119,7 +131,7 @@ bool place_apple(Game* game) {
 }
 
 SnakeResult snake_step(SnakeBody* snake, Vector2 apple) {
-    if (snake == NULL) return SNAKE_ALLOCATION_FAILED;
+    if (snake == NULL || snake->head == NULL || snake->tail == NULL) return SNAKE_INVALID_ARGUMENT;
 
     const int next_x = wrap_coordinate(snake->head->x + (int)snake->direction.x, COLUMNS);
     const int next_y = wrap_coordinate(snake->head->y + (int)snake->direction.y, ROWS);

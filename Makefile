@@ -50,3 +50,9 @@ build:
 
 clean:
 	([ -f lib/libraylib.a ] || [ -f lib/raylib.h ]) && rm ./lib/* || :
+
+debug:
+	(cd src && gcc -std=c11 -Wall -Wextra -Wpedantic \
+	-fsanitize=address,undefined -g \
+	*.c -lm -L../lib ../lib/libraylib.a \
+	-I../lib -o ../cnake)

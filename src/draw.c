@@ -1,3 +1,11 @@
+/**
+ * @file draw.c
+ * @brief Rendering implementation for all game states.
+ *
+ * This module contains raylib-specific drawing code. Rendering functions should only read game
+ * state and must not modify gameplay data.
+ */
+
 #include <math.h>
 #include <stddef.h>
 
@@ -143,6 +151,8 @@ static void draw_error_text(void) {
 }
 
 void game_render(const Game* game) {
+    if (game == NULL) return;
+
     BeginDrawing();
     ClearBackground(BACKGROUND_COLOR);
 

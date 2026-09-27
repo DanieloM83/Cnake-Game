@@ -1,3 +1,13 @@
+/**
+ * @file main.c
+ * @brief Application entry point and raylib window lifecycle.
+ *
+ * This module initializes raylib, creates the Game object, runs the main
+ * update/render loop, and releases resources on exit.
+ *
+ * Gameplay and rendering logic are implemented in separate modules.
+ */
+
 #include "cnake.h"
 
 int main(void) {
