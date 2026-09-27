@@ -7,3 +7,6 @@ PointerAlignment: Left
 AlignConsecutiveAssignments: true
 ColumnLimit: 100
 SortIncludes: true
+
+AlignAfterOpenBracket: BlockIndent
+BinPackArguments: false
