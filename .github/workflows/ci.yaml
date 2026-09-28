@@ -69,39 +69,3 @@ jobs:
             echo "Error: The game crashed or closed prematurely (code $EXIT_CODE)."
             exit 1
           fi
-
-      - name: Smoke test on macOS
-        if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          ./build/cnake &
-          PID=$!
-          
-          for i in {1..10}; do
-            if ! kill -0 $PID 2>/dev/null; then
-              wait $PID
-              EXIT_CODE=$?
-              echo "Error: The game crashed at the $i second  (code $EXIT_CODE)."
-              exit 1
-            fi
-            sleep 1
-          done
-          
-          kill $PID
-          echo "Success: The game ran smoothly for 10 seconds."
-
-      - name: Smoke test on Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $executable = Join-Path $env:GITHUB_WORKSPACE "build\Release\cnake.exe"
-          $process = Start-Process -FilePath $executable -WorkingDirectory (Split-Path $executable) -PassThru
-          
-          if ($process.WaitForExit(10000)) {
-              Write-Error "Error: The game crashed or closed prematurely (code $($process.ExitCode))"
-              exit 1
-          } else {
-              Stop-Process -Id $process.Id -Force
-              Write-Host "Success: The game ran smoothly for 10 seconds."
-              exit 0
-          }

@@ -15,6 +15,11 @@ int main(void) {
     SetTargetFPS(60);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Cnake!");
 
+    if (!IsWindowReady()) {
+        TraceLog(LOG_ERROR, "Failed to initialize window");
+        return 1;
+    }
+
     Game game = {0};
 
     if (!game_init(&game)) {
