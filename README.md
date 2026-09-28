@@ -26,7 +26,7 @@ cd Cnake-Game
 Install the required dependencies:
 ```bash
 sudo apt install cmake build-essential \
-  libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev \
+  libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev \
   libxi-dev libxext-dev libgl1-mesa-dev libasound2-dev
 ```
 Build and run the game:

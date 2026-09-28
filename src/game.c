@@ -85,7 +85,7 @@ void game_update(Game* game, float delta_time) {
                 game->state = GAME_ERROR;
                 return;
             }
-            game->simulation_timer += delta_time;
+if (IsWindowFocused()) game->simulation_timer += delta_time;
 
             if ((IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) && game->snake->direction.y != 1) {
                 game->next_direction = (Vector2){0, -1};
