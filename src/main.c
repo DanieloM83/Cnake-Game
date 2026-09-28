@@ -1,50 +1,41 @@
-#include <raylib.h>
+/**
+ * @file main.c
+ * @brief Application entry point and raylib window lifecycle.
+ *
+ * This module initializes raylib, creates the Game object, runs the main
+ * update/render loop, and releases resources on exit.
+ *
+ * Gameplay and rendering logic are implemented in separate modules.
+ */
+
 #include "cnake.h"
 
-SnakeBody *snake;
-Vector2 apple;
-int score = 0, record = 0;
-
-int main() {
+int main(void) {
     SetConfigFlags(FLAG_VSYNC_HINT);
     SetTargetFPS(60);
-    InitWindow(S_WIDTH, S_HEIGHT, "Cnake!");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Cnake!");
 
-    snake = init_snake();
-    
-    bool direction_setted = true;
-    float time_since_last_simulation = 0.0f;
+    if (!IsWindowReady()) {
+        TraceLog(LOG_ERROR, "Failed to initialize window");
+        return 1;
+    }
+
+    Game game = {0};
+
+    if (!game_init(&game)) {
+        TraceLog(LOG_ERROR, "Failed to initialize game");
+        CloseWindow();
+        return 1;
+    }
 
     while (!WindowShouldClose()) {
-        time_since_last_simulation += GetFrameTime();
-        
-        if (!direction_setted)  {
-            if ((IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) && snake->direction.y != 1)
-                snake->direction = (Vector2){0, -1}, direction_setted = true;
-            else if ((IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) && snake->direction.x != 1)
-                snake->direction = (Vector2){-1, 0}, direction_setted = true;
-            else if ((IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) && snake->direction.y != -1)
-                snake->direction = (Vector2){0, 1}, direction_setted = true;
-            else if ((IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) && snake->direction.x != -1)
-                snake->direction = (Vector2){1, 0}, direction_setted = true;
-        }
+        const float delta_time = GetFrameTime();
 
-        if (time_since_last_simulation >= 0.1f && IsWindowFocused()) {
-            eval_pos();
-            time_since_last_simulation = 0;
-            direction_setted = false;
-        }
-
-        BeginDrawing();
-        
-        ClearBackground(GetColor(0x181818FF));
-        draw_snake();
-        draw_apple();
-        draw_grid();
-        draw_score();
-        EndDrawing();
+        game_update(&game, delta_time);
+        game_render(&game);
     }
-    
+
+    game_destroy(&game);
     CloseWindow();
 
     return 0;

@@ -1,0 +1,71 @@
+name: Build CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build for ${{ matrix.target }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: Linux
+            os: ubuntu-latest
+          - target: Darwin
+            os: macos-latest
+          - target: Windows_NT
+            os: windows-latest
+          
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install dependencies (Linux)
+        if: matrix.target == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            xvfb \
+            xauth \
+            libx11-dev \
+            libxcursor-dev \
+            libxrandr-dev \
+            libxinerama-dev \
+            libxi-dev \
+            libxext-dev \
+            libgl1-mesa-dev \
+            libasound2-dev
+
+      - name: Configure CMake
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build project
+        run: cmake --build build --config Release --parallel
+      
+      - name: Smoke test on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set +e
+          
+          timeout --signal=TERM 10s xvfb-run -a ./build/cnake
+          EXIT_CODE=$?
+          
+          if [ "$EXIT_CODE" -eq 124 ]; then
+            echo "Success: The game ran smoothly for 10 seconds."
+            exit 0
+          else
+            echo "Error: The game crashed or closed prematurely (code $EXIT_CODE)."
+            exit 1
+          fi

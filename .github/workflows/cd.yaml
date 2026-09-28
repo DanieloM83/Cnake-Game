@@ -1,0 +1,114 @@
+name: Release CD
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build release (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            archive: cnake-linux.tar.gz
+
+          - os: macos-latest
+            platform: macos
+            archive: cnake-macos.tar.gz
+
+          - os: windows-latest
+            platform: windows
+            archive: cnake-windows.zip
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libx11-dev \
+            libxcursor-dev \
+            libxrandr-dev \
+            libxinerama-dev \
+            libxi-dev \
+            libxext-dev \
+            libgl1-mesa-dev \
+            libasound2-dev
+
+      - name: Configure CMake
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build project
+        run: cmake --build build --config Release --parallel
+
+      - name: Package Linux/macOS executable
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp build/cnake dist/cnake
+
+          tar -czf "${{ matrix.archive }}" \
+            -C dist \
+            cnake
+
+      - name: Package Windows executable
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+
+          Copy-Item `
+            "build\Release\cnake.exe" `
+            "dist\cnake.exe"
+
+          Compress-Archive `
+            -Path "dist\cnake.exe" `
+            -DestinationPath "${{ matrix.archive }}" `
+            -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: cnake-${{ matrix.platform }}
+          path: ${{ matrix.archive }}
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download platform artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: cnake-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            release-assets/* \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "Cnake Game ${GITHUB_REF_NAME}" \
+            --generate-notes \
+            --verify-tag
