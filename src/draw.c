@@ -111,16 +111,16 @@ static void draw_win_text(void) {
 }
 
 static void draw_pause(float alpha) {
-    const Color color          = ColorAlpha(RAYWHITE, alpha);
-    const int center_x         = SCREEN_WIDTH / 2;
-    const int center_y         = SCREEN_HEIGHT / 2;
-    const int frame_size       = 150;
-    const int bar_width        = 20;
-    const int bar_height       = frame_size / 2;
-    const int bar_gap          = 20;
-    const float roundness      = 0.25f;
-    const int round_segments   = 20;
-    const int border_thickness = 20;
+    const Color color            = ColorAlpha(RAYWHITE, alpha);
+    const int center_x           = SCREEN_WIDTH / 2;
+    const int center_y           = SCREEN_HEIGHT / 2;
+    const int frame_size         = 150;
+    const int bar_width          = 20;
+    const int bar_height         = frame_size / 2;
+    const int bar_gap            = 20;
+    const float roundness        = 0.25f;
+    const int round_segments     = 20;
+    const float border_thickness = 20;
 
     const Rectangle frame = {
         center_x - frame_size / 2, center_y - frame_size / 2, frame_size, frame_size
@@ -134,7 +134,7 @@ static void draw_pause(float alpha) {
         center_x + bar_gap / 2, center_y - bar_height / 2, bar_width, bar_height
     };
 
-    DrawRectangleRoundedLines(frame, roundness, round_segments, border_thickness, color);
+    DrawRectangleRoundedLinesEx(frame, roundness, round_segments, border_thickness, color);
     DrawRectangleRounded(left_bar, roundness, round_segments, color);
     DrawRectangleRounded(right_bar, roundness, round_segments, color);
 }

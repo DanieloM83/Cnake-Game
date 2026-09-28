@@ -54,6 +54,7 @@ dkms.conf
 .vscode/
 
 # Ignore binaries
+build/
 cnake
 cnake.exe
 
