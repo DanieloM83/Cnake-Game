@@ -63,6 +63,7 @@ cnake-game/
 │       ├── cd.yaml  # Creates releases from Git tags
 │       └── ci.yaml  # Builds and smoke-tests the project
 └── src
+    ├── assets.c     # Assets loading and handling
     ├── cnake.h      # Shared declarations
     ├── draw.c       # Rendering logic
     ├── game.c       # Game state and gameplay logic
