@@ -217,7 +217,7 @@ bool place_apple(Game* game);
  */
 SnakeResult snake_step(SnakeBody* snake, Vector2 apple);
 
-void assets_init(void);
+bool assets_init(void);
 void sound_play_death(void);
 void sound_play_move(void);
 void sound_play_eat(void);

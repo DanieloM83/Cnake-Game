@@ -22,7 +22,7 @@ static Sound load_sound(const unsigned char* data, int size) {
     return sound;
 }
 
-void assets_init(void) {
+bool assets_init(void) {
     if (!IsAudioDeviceReady()) InitAudioDevice();
 
     death_sound = load_sound(death_sound_data, death_sound_size);
@@ -33,6 +33,11 @@ void assets_init(void) {
 
     ImageFormat(&icon, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     SetWindowIcon(icon);
+
+    return (
+        IsMusicValid(theme) && IsSoundValid(death_sound) && IsSoundValid(move_sound) &&
+        IsSoundValid(eat_sound) && IsImageValid(icon)
+    );
 }
 
 void assets_toggle_mute() {

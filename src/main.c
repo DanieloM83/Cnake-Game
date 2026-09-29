@@ -20,12 +20,18 @@ int main(void) {
         return 1;
     }
 
-    assets_init();
+    if (!assets_init()) {
+        TraceLog(LOG_ERROR, "Failed to initialize assets");
+        assets_destroy();
+        CloseWindow();
+        return 1;
+    }
 
     Game game = {0};
 
     if (!game_init(&game)) {
         TraceLog(LOG_ERROR, "Failed to initialize game");
+        assets_destroy();
         CloseWindow();
         return 1;
     }
