@@ -1,9 +1,10 @@
 /**
  * @file cnake.h
- * @brief Public types, constants, and API for the Cnake game.
+ * @brief Shared game types, constants, and module interfaces.
  *
- * This header contains the shared game model and the public interfaces
- * for game updates, rendering, snake management, and apple placement.
+ * This header defines the public interfaces used by the application,
+ * including game lifecycle management, snake simulation, rendering,
+ * resource management, and common gameplay constants.
  */
 
 #if !defined(CNAKE_H)
@@ -41,6 +42,9 @@
 #define DEATH_POST_ANIMATION_DELAY 0.75f
 #define DEATH_TOTAL_DURATION (DEATH_ANIMATION_DURATION + DEATH_POST_ANIMATION_DELAY)
 
+// Assets constants
+#define ASSETS_THEME_SPEED 0.25f  // speed of fading-in / fading-out
+
 // Math functions
 static inline int wrap_coordinate(int value, int size) {
     return (value < 0 ? (size + value) % size : value % size);
@@ -48,6 +52,14 @@ static inline int wrap_coordinate(int value, int size) {
 
 static inline int max_int(int a, int b) {
     return (a > b ? a : b);
+}
+
+static inline float max_float(float a, float b) {
+    return (a > b ? a : b);
+}
+
+static inline float min_float(float a, float b) {
+    return (a < b ? a : b);
 }
 
 // Game-specific structs and enums
@@ -205,5 +217,35 @@ bool place_apple(Game* game);
  *       display the death animation.
  */
 SnakeResult snake_step(SnakeBody* snake, Vector2 apple);
+
+bool assets_init(void);
+void sound_play_death(void);
+void sound_play_move(void);
+void sound_play_eat(void);
+
+/**
+ * @brief Starts playing the background theme with a fade-in.
+ */
+void music_play_theme(void);
+
+/**
+ * @brief Fades the background theme out and stops it when silent.
+ */
+void music_fade_out(void);
+
+/**
+ * @brief Fades the background theme in and starts it if necessary.
+ */
+void music_fade_in(void);
+
+/**
+ * @brief Updates music streaming and volume interpolation.
+ *
+ * @param delta_time Time elapsed since the previous frame, in seconds.
+ */
+void music_update_theme(float delta_time);
+
+void assets_destroy(void);
+void assets_toggle_mute(void);
 
 #endif  // CNAKE_H

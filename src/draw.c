@@ -63,13 +63,16 @@ static void draw_score(const Game* game) {
 static void draw_controls(void) {
     const char* movement_text = "WASD or arrows to move";
     const char* pause_text    = "P to pause or unpause";
+    const char* mute_text     = "M to mute or unmute";
     const char* exit_text     = "ESC to exit";
     const int x               = 10;
-    const int movement_y      = SCREEN_HEIGHT - 3 * (SUBTEXT_FS + 5);
-    const int pause_y         = SCREEN_HEIGHT - 2 * (SUBTEXT_FS + 5);
+    const int movement_y      = SCREEN_HEIGHT - 4 * (SUBTEXT_FS + 5);
+    const int pause_y         = SCREEN_HEIGHT - 3 * (SUBTEXT_FS + 5);
+    const int mute_y          = SCREEN_HEIGHT - 2 * (SUBTEXT_FS + 5);
     const int exit_y          = SCREEN_HEIGHT - SUBTEXT_FS - 5;
     DrawText(movement_text, x, movement_y, SUBTEXT_FS, SUBTEXT_COLOR);
     DrawText(pause_text, x, pause_y, SUBTEXT_FS, SUBTEXT_COLOR);
+    DrawText(mute_text, x, mute_y, SUBTEXT_FS, SUBTEXT_COLOR);
     DrawText(exit_text, x, exit_y, SUBTEXT_FS, SUBTEXT_COLOR);
 }
 
