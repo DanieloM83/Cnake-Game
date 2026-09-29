@@ -1,3 +1,16 @@
+/**
+ * @file assets.c
+ * @brief Loading and lifetime management of embedded game assets.
+ *
+ * Asset data is compiled into the executable and exposed through
+ * generated/embedded_assets.h. This module owns all raylib resource
+ * handles created from that data.
+ *
+ * The asset subsystem must be initialized after the raylib window has
+ * been created. If assets_init() returns false, the caller must call
+ * assets_destroy() before shutting down the application.
+ */
+
 #include "cnake.h"
 #include "generated/embedded_assets.h"
 
@@ -11,6 +24,16 @@ static float theme_volume = 0.0f;
 static float theme_target = 0.0f;
 static bool muted         = false;
 
+/**
+ * @brief Loads a raylib Sound from embedded WAV data.
+ *
+ * The temporary Wave object is released after the Sound is created.
+ *
+ * @param data Pointer to the embedded WAV data.
+ * @param size Size of the WAV data in bytes.
+ *
+ * @return A valid Sound on success, or an invalid Sound on failure.
+ */
 static Sound load_sound(const unsigned char* data, int size) {
     Wave wave = LoadWaveFromMemory(".wav", data, size);
 
@@ -22,6 +45,15 @@ static Sound load_sound(const unsigned char* data, int size) {
     return sound;
 }
 
+/**
+ * @brief Initializes all embedded game assets.
+ *
+ * This function loads sound effects, background music, and the window icon
+ * from memory. The caller is responsible for calling assets_destroy() after
+ * a successful or partially successful initialization attempt.
+ *
+ * @return true if every asset was loaded successfully, false otherwise.
+ */
 bool assets_init(void) {
     if (!IsAudioDeviceReady()) InitAudioDevice();
 
@@ -32,15 +64,14 @@ bool assets_init(void) {
     icon        = LoadImageFromMemory(".png", window_icon_data, window_icon_size);
 
     ImageFormat(&icon, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+    if (!IsImageValid(icon)) return false;
     SetWindowIcon(icon);
 
-    return (
-        IsMusicValid(theme) && IsSoundValid(death_sound) && IsSoundValid(move_sound) &&
-        IsSoundValid(eat_sound) && IsImageValid(icon)
-    );
+    return IsMusicValid(theme) && IsSoundValid(death_sound) && IsSoundValid(move_sound) &&
+           IsSoundValid(eat_sound);
 }
 
-void assets_toggle_mute() {
+void assets_toggle_mute(void) {
     muted = !muted;
     SetMusicVolume(theme, muted ? 0.0f : theme_volume);
 }
@@ -95,7 +126,13 @@ void music_update_theme(float delta_time) {
     }
 }
 
-void assets_destroy() {
+/**
+ * @brief Releases all resources owned by the asset subsystem.
+ *
+ * This function is also intended to be called after a partially failed
+ * assets_init() call.
+ */
+void assets_destroy(void) {
     StopMusicStream(theme);
 
     UnloadSound(death_sound);

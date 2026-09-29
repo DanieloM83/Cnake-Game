@@ -1,9 +1,10 @@
 /**
  * @file cnake.h
- * @brief Public types, constants, and API for the Cnake game.
+ * @brief Shared game types, constants, and module interfaces.
  *
- * This header contains the shared game model and the public interfaces
- * for game updates, rendering, snake management, and apple placement.
+ * This header defines the public interfaces used by the application,
+ * including game lifecycle management, snake simulation, rendering,
+ * resource management, and common gameplay constants.
  */
 
 #if !defined(CNAKE_H)
@@ -221,10 +222,29 @@ bool assets_init(void);
 void sound_play_death(void);
 void sound_play_move(void);
 void sound_play_eat(void);
+
+/**
+ * @brief Starts playing the background theme with a fade-in.
+ */
 void music_play_theme(void);
-void music_update_theme(const float delta_time);
+
+/**
+ * @brief Fades the background theme out and stops it when silent.
+ */
 void music_fade_out(void);
+
+/**
+ * @brief Fades the background theme in and starts it if necessary.
+ */
 void music_fade_in(void);
+
+/**
+ * @brief Updates music streaming and volume interpolation.
+ *
+ * @param delta_time Time elapsed since the previous frame, in seconds.
+ */
+void music_update_theme(float delta_time);
+
 void assets_destroy(void);
 void assets_toggle_mute(void);
 
