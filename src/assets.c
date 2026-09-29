@@ -20,9 +20,10 @@ static Sound eat_sound;
 static Music theme;
 static Image icon;
 
-static float theme_volume = 0.0f;
-static float theme_target = 0.0f;
-static bool muted         = false;
+static float theme_volume   = 0.0f;
+static float theme_target   = 0.0f;
+static bool muted           = false;
+static bool audio_available = true;
 
 /**
  * @brief Loads a raylib Sound from embedded WAV data.
@@ -57,38 +58,48 @@ static Sound load_sound(const unsigned char* data, int size) {
 bool assets_init(void) {
     if (!IsAudioDeviceReady()) InitAudioDevice();
 
-    death_sound = load_sound(death_sound_data, death_sound_size);
-    move_sound  = load_sound(move_sound_data, move_sound_size);
-    eat_sound   = load_sound(eat_sound_data, eat_sound_size);
-    theme       = LoadMusicStreamFromMemory(".mp3", theme_music_data, theme_music_size);
-    icon        = LoadImageFromMemory(".png", window_icon_data, window_icon_size);
+    if (IsAudioDeviceReady()) {
+        death_sound     = load_sound(death_sound_data, death_sound_size);
+        move_sound      = load_sound(move_sound_data, move_sound_size);
+        eat_sound       = load_sound(eat_sound_data, eat_sound_size);
+        theme           = LoadMusicStreamFromMemory(".mp3", theme_music_data, theme_music_size);
+        audio_available = IsSoundValid(death_sound) && IsSoundValid(move_sound) &&
+                          IsSoundValid(eat_sound) && IsMusicValid(theme);
 
+        if (!audio_available)
+            TraceLog(LOG_WARNING, "Audio assets are unavailable; continuing without audio");
+    }
+
+    icon = LoadImageFromMemory(".png", window_icon_data, window_icon_size);
     ImageFormat(&icon, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     if (!IsImageValid(icon)) return false;
     SetWindowIcon(icon);
 
-    return IsMusicValid(theme) && IsSoundValid(death_sound) && IsSoundValid(move_sound) &&
-           IsSoundValid(eat_sound);
+    return true;
 }
 
 void assets_toggle_mute(void) {
+    if (!audio_available) return;
+
     muted = !muted;
     SetMusicVolume(theme, muted ? 0.0f : theme_volume);
 }
 
 void sound_play_death(void) {
-    if (!muted) PlaySound(death_sound);
+    if (!muted && audio_available && IsSoundValid(death_sound)) PlaySound(death_sound);
 }
 
 void sound_play_move(void) {
-    if (!muted) PlaySound(move_sound);
+    if (!muted && audio_available && IsSoundValid(move_sound)) PlaySound(move_sound);
 }
 
 void sound_play_eat(void) {
-    if (!muted) PlaySound(eat_sound);
+    if (!muted && audio_available && IsSoundValid(eat_sound)) PlaySound(eat_sound);
 }
 
 void music_play_theme(void) {
+    if (!audio_available) return;
+
     theme_volume = 0.0f;
     theme_target = 0.35f;
 
@@ -96,10 +107,14 @@ void music_play_theme(void) {
 }
 
 void music_fade_out(void) {
+    if (!audio_available) return;
+
     theme_target = 0.0f;
 }
 
 void music_fade_in(void) {
+    if (!audio_available) return;
+
     theme_target = 0.35f;
 
     if (!IsMusicStreamPlaying(theme)) {
@@ -109,6 +124,8 @@ void music_fade_in(void) {
 }
 
 void music_update_theme(float delta_time) {
+    if (!audio_available) return;
+
     UpdateMusicStream(theme);
 
     const float delta_volume = ASSETS_THEME_SPEED * delta_time;
@@ -133,13 +150,15 @@ void music_update_theme(float delta_time) {
  * assets_init() call.
  */
 void assets_destroy(void) {
-    StopMusicStream(theme);
+    if (IsMusicValid(theme)) {
+        StopMusicStream(theme);
+        UnloadMusicStream(theme);
+    }
 
-    UnloadSound(death_sound);
-    UnloadSound(move_sound);
-    UnloadSound(eat_sound);
-    UnloadMusicStream(theme);
-    UnloadImage(icon);
+    if (IsSoundValid(death_sound)) UnloadSound(death_sound);
+    if (IsSoundValid(move_sound)) UnloadSound(move_sound);
+    if (IsSoundValid(eat_sound)) UnloadSound(eat_sound);
+    if (IsImageValid(icon)) UnloadImage(icon);
 
     if (IsAudioDeviceReady()) CloseAudioDevice();
 }
