@@ -20,6 +20,8 @@ int main(void) {
         return 1;
     }
 
+    assets_init();
+
     Game game = {0};
 
     if (!game_init(&game)) {
@@ -28,6 +30,7 @@ int main(void) {
         return 1;
     }
 
+    music_play_theme();
     while (!WindowShouldClose()) {
         const float delta_time = GetFrameTime();
 
@@ -35,6 +38,7 @@ int main(void) {
         game_render(&game);
     }
 
+    assets_destroy();
     game_destroy(&game);
     CloseWindow();
 

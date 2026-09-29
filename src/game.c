@@ -71,12 +71,18 @@ static bool game_reset(Game* game) {
 
 void game_update(Game* game, float delta_time) {
     if (game == NULL) return;
+    music_update_theme(delta_time);
 
+    if (IsKeyPressed(KEY_M)) {
+        assets_toggle_mute();
+    }
     switch (game->state) {
         case GAME_START:
         case GAME_OVER:
-            if (GetKeyPressed() != 0) {
+            music_fade_in();
+            if (GetKeyPressed() != 0 && !IsKeyPressed(KEY_M)) {
                 if (game_reset(game)) game->state = GAME_PLAYING;
+                music_fade_out();
             }
             break;
 
@@ -85,7 +91,7 @@ void game_update(Game* game, float delta_time) {
                 game->state = GAME_ERROR;
                 return;
             }
-if (IsWindowFocused()) game->simulation_timer += delta_time;
+            if (IsWindowFocused()) game->simulation_timer += delta_time;
 
             if ((IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) && game->snake->direction.y != 1) {
                 game->next_direction = (Vector2){0, -1};
@@ -102,6 +108,7 @@ if (IsWindowFocused()) game->simulation_timer += delta_time;
             ) {
                 game->next_direction = (Vector2){1, 0};
             } else if ((IsKeyPressed(KEY_P))) {
+                music_fade_in();
                 game->state = GAME_PAUSE;
                 return;
             }
@@ -111,9 +118,11 @@ if (IsWindowFocused()) game->simulation_timer += delta_time;
                 game->simulation_timer -= GAME_TICK_INTERVAL;
                 switch (snake_step(game->snake, game->apple)) {
                     case SNAKE_ATE_APPLE:
+                        sound_play_eat();
                         game->score++;
                         game->record = max_int(game->record, game->score);
                         if (game->snake->length == ROWS * COLUMNS) {
+                            music_fade_in();
                             game->state = GAME_WIN;
                             return;
                         } else if (!place_apple(game)) {
@@ -122,6 +131,7 @@ if (IsWindowFocused()) game->simulation_timer += delta_time;
                         }
                         break;
                     case SNAKE_COLLIDED:
+                        sound_play_death();
                         game->state = GAME_DYING;
                         return;
                     case SNAKE_INVALID_ARGUMENT:
@@ -129,6 +139,7 @@ if (IsWindowFocused()) game->simulation_timer += delta_time;
                         game->state = GAME_ERROR;
                         return;
                     case SNAKE_MOVED:
+                        sound_play_move();
                         break;
                 }
             }
@@ -139,6 +150,7 @@ if (IsWindowFocused()) game->simulation_timer += delta_time;
             if (IsKeyPressed(KEY_P)) {
                 game->pause_alpha_phase = 0;
                 game->state             = GAME_PLAYING;
+                music_fade_out();
                 return;
             }
             if (game->pause_alpha_phase >= 1) {
@@ -155,8 +167,15 @@ if (IsWindowFocused()) game->simulation_timer += delta_time;
             break;
 
         case GAME_WIN:
-            if (GetKeyPressed() != 0)
-                if (game_reset(game)) game->state = GAME_PLAYING;
+            if (GetKeyPressed() != 0) {
+                if (game_reset(game)) {
+                    game->state = GAME_PLAYING;
+                    music_fade_out();
+                }
+            }
+            break;
+
+        case GAME_ERROR:
             break;
     }
 }

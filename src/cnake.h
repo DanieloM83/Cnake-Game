@@ -41,6 +41,9 @@
 #define DEATH_POST_ANIMATION_DELAY 0.75f
 #define DEATH_TOTAL_DURATION (DEATH_ANIMATION_DURATION + DEATH_POST_ANIMATION_DELAY)
 
+// Assets constants
+#define ASSETS_THEME_SPEED 0.25f  // speed of fading-in / fading-out
+
 // Math functions
 static inline int wrap_coordinate(int value, int size) {
     return (value < 0 ? (size + value) % size : value % size);
@@ -48,6 +51,14 @@ static inline int wrap_coordinate(int value, int size) {
 
 static inline int max_int(int a, int b) {
     return (a > b ? a : b);
+}
+
+static inline float max_float(float a, float b) {
+    return (a > b ? a : b);
+}
+
+static inline float min_float(float a, float b) {
+    return (a < b ? a : b);
 }
 
 // Game-specific structs and enums
@@ -205,5 +216,16 @@ bool place_apple(Game* game);
  *       display the death animation.
  */
 SnakeResult snake_step(SnakeBody* snake, Vector2 apple);
+
+void assets_init(void);
+void sound_play_death(void);
+void sound_play_move(void);
+void sound_play_eat(void);
+void music_play_theme(void);
+void music_update_theme(const float delta_time);
+void music_fade_out(void);
+void music_fade_in(void);
+void assets_destroy(void);
+void assets_toggle_mute(void);
 
 #endif  // CNAKE_H
